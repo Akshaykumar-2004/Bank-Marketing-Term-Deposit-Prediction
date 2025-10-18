@@ -1,0 +1,418 @@
+Masterclass: The Bank Marketing Prediction Project (Ultimate Edition)
+Part A: The Mission Briefing 📜
+Imagine we are data detectives hired by a big bank called "FutureInvest Bank." The bank is running a marketing campaign, calling customers on the phone to convince them to open a term deposit, which is a special type of savings account.
+
+The Problem We've Been Hired to Solve
+
+The marketing team is spending a lot of money and time calling thousands of people, but only a small number of them are saying "yes." They need our help to be smarter and more efficient. They've hired us to analyze the data from their last campaign to solve some critical business problems.
+
+Our 8 Mission Goals (The Business Problems)
+
+Our entire project will be dedicated to finding the clues that solve these 8 mysteries for the bank's management:
+
+The Big Picture: What is our overall success rate? (This will be our first Key Performance Indicator or KPI).
+
+The Target Audience: What does our ideal customer look like? (Analyzing demographics like age, job, etc.).
+
+The Debt Dilemma: Does a customer's existing debt (like a house or personal loan) affect their decision?
+
+The Outlier Problem: Are there strange, extreme call durations that are messing up our analysis?
+
+The Grouping Strategy: Can we find better patterns by putting customers into age groups instead of looking at their exact age?
+
+The "Too Many Calls" Question: How many times should we call a customer before it becomes pointless?
+
+The Money Climate: Does the general economic situation (like interest rates) affect our campaign's success?
+
+The Simplification Challenge: Our data has over 60 columns after we prepare it! Can we simplify it into a few "super-features" to make prediction easier?
+
+Part B: Setting Up Your Digital Workshop in Google Colab 💻
+Step 1: Get Your Evidence (The Dataset)
+Our "case file" is a famous and high-quality dataset about bank marketing.
+
+Action Required: Download the dataset from this link on Kaggle. You will need a free Kaggle account.
+
+Link: Bank Marketing (UCI) Dataset on Kaggle
+
+After clicking "Download," you will get a file named archive.zip. Unzip it, and you will find the file we need: bank-additional-full.csv.
+
+Step 2: Preparing Your Google Colab Notebook
+Go to https://colab.research.google.com and click "New notebook".
+
+Click on the file name at the top (it might say Untitled.ipynb) and rename it to Bank_Marketing_Analysis.
+
+Now, we need to upload our evidence file. Click on the folder icon on the left-side panel.
+
+You will see an "Upload to session storage" button (it looks like a page with an arrow pointing up). Click it.
+
+Find and select the bank-additional-full.csv file from your computer. Click "Open."
+
+Your workshop is now set up. The data file is ready for our investigation!
+
+Part C: The Detective Work (EDA & Data Deep Dive) 🔎
+This is where we put on our detective hats and start looking for clues.
+
+Block 1: Initial Inspection & Mission Goal #1: The Big Picture
+First, let's load our data and get a feel for the case. We'll also solve our first mystery right away!
+
+Action: Copy this code into the first cell of your notebook and run it.
+
+
+# === Step 1: Import Our Toolkits ===
+# pandas: Our #1 tool for working with data tables.
+# numpy: For any heavy-duty math we might need.
+# matplotlib & seaborn: Our toolkits for creating beautiful charts to show our findings.
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Make our charts look nice and professional.
+sns.set_style("whitegrid")
+
+# === Step 2: Load the Data from our uploaded file ===
+# The data uses semicolons (;) to separate columns, so we must tell pandas about it.
+file_path = 'bank-additional-full.csv'
+df = pd.read_csv(file_path, sep=';')
+
+# === Step 3: Initial Investigation ===
+print("--- First 5 Rows of the Data ---")
+# display() is a cool way to print tables nicely in Colab.
+display(df.head())
+
+print("\n--- Basic Information About the Data ---")
+# .info() gives us a quick summary of all our columns.
+df.info()
+
+print("\n--- Checking for Missing Clues (NaN values) ---")
+# isnull().sum() counts how many empty spots are in each column.
+print(df.isnull().sum())
+
+# --- Mission Goal #1: What is our overall success rate? ---
+print("\n--- Mission #1: The Big Picture ---")
+# First, let's rename the 'y' column to something that makes sense.
+df.rename(columns={'y': 'subscribed'}, inplace=True)
+
+# Now, we calculate the percentage of people who said 'yes' vs 'no'.
+# This is our most important Key Performance Indicator (KPI)!
+conversion_rate = df['subscribed'].value_counts(normalize=True) * 100
+
+print("Our Key Performance Indicator (KPI): Overall Conversion Rate")
+print(conversion_rate)
+
+# Let's visualize this KPI.
+plt.figure(figsize=(6, 5))
+sns.countplot(x='subscribed', data=df)
+plt.title('Overall Campaign Subscriptions')
+plt.ylabel('Number of Customers')
+plt.show()
+
+print("Insight #1: The campaign has a very low conversion rate. A large majority of customers did not subscribe.")
+
+
+What Just Happened? (Insight #1) We've successfully loaded our data and solved our first mystery. We found that the dataset is large (over 41,000 calls) and perfectly clean with no missing values. Most importantly, we calculated our first KPI: the conversion rate. We discovered that only about 11.27% of customers subscribed. This is our first major insight for the bank: the current campaign is not very effective.
+
+Block 2: Mission Goal #2: The Target Audience
+Who are the people who say "yes"? Let's investigate their demographics.
+
+Action: Copy this code into the next cell and run it.
+# --- Mission Goal #2: What does our ideal customer look like? ---
+print("\n--- Mission #2: The Target Audience ---")
+
+# Let's create a grid of charts to explore different clues at once.
+fig, axes = plt.subplots(2, 2, figsize=(20, 16))
+
+# Clue 1: Job Type
+sns.countplot(y='job', hue='subscribed', data=df, ax=axes[0, 0], order=df['job'].value_counts().index)
+axes[0, 0].set_title('Subscriptions by Job Type')
+
+# Clue 2: Marital Status
+sns.countplot(x='marital', hue='subscribed', data=df, ax=axes[0, 1])
+axes[0, 1].set_title('Subscriptions by Marital Status')
+
+# Clue 3: Education Level
+sns.countplot(y='education', hue='subscribed', data=df, ax=axes[1, 0], order=df['education'].value_counts().index)
+axes[1, 0].set_title('Subscriptions by Education Level')
+
+# Clue 4: Age Distribution
+sns.histplot(data=df, x='age', hue='subscribed', multiple='stack', ax=axes[1, 1], bins=30)
+axes[1, 1].set_title('Subscriptions by Age')
+
+plt.tight_layout() # This function makes our charts look neat and not overlap.
+plt.show()
+
+print("Insight #2: While the bank calls many 'admin' and 'blue-collar' workers, 'students' and 'retired' individuals have a much higher rate of saying 'yes'. The bank should focus more on these groups.")
+
+What Just Happened? (Insight #2) We've created a demographic profile of the customers. Our charts clearly show that while the bank calls a lot of working-age people (like "admin" and "technician"), the groups that are most likely to say "yes" are students and retired people. This is a massive clue! The bank is spending money calling the wrong people.
+
+Block 3: Mission Goal #3: The Debt Dilemma
+Does having other loans prevent people from saving? Let's find out.
+
+Action: Copy this code into the next cell and run it.
+
+# --- Mission Goal #3: Does existing debt affect the decision? ---
+print("\n--- Mission #3: The Debt Dilemma ---")
+
+fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+
+# Clue 1: Housing Loan
+sns.countplot(x='housing', hue='subscribed', data=df, ax=axes[0])
+axes[0].set_title('Impact of Housing Loan on Subscription')
+
+# Clue 2: Personal Loan
+sns.countplot(x='loan', hue='subscribed', data=df, ax=axes[1])
+axes[1].set_title('Impact of Personal Loan on Subscription')
+
+plt.tight_layout()
+plt.show()
+
+print("Insight #3: Customers who do NOT have a housing or personal loan are more likely to subscribe to a term deposit. Having existing debt makes a customer a less promising target.")
+
+What Just Happened? (Insight #3) The charts tell a clear story. For both housing and personal loans, the group of customers who said "no" to having a loan has a higher proportion of subscribers. This makes sense: people without existing debt have more money available to save. The bank should prioritize calling customers who don't have loans.
+
+Part D: Advanced Investigation (Cleaning & Creating Clues)
+Now we will use some more advanced detective techniques.
+
+Block 4: Mission Goal #4: The Outlier Problem
+Sometimes, our data has extreme values that can trick us. These are called outliers. Let's hunt for them.
+
+Concept Deep Dive: What is an Outlier? Imagine you're in an 8th-grade class where everyone is between 4 and 5 feet tall. Suddenly, a 7-foot-tall NBA player walks in. His height is an outlier. It's so different from everyone else that if you calculated the average height of the class, his height would pull the average way up and give you a misleading idea of how tall 8th graders are. In our data, a call that lasted for hours would be an outlier.
+
+We'll use a technique called the IQR (Interquartile Range) method to find them.
+
+Line up all the data points from smallest to largest.
+
+Q1 (1st Quartile): The point 25% of the way through the line.
+
+Q3 (3rd Quartile): The point 75% of the way through the line.
+
+IQR: The distance between Q3 and Q1 (IQR = Q3 - Q1).
+
+Anything too far below Q1 or too far above Q3 is considered an outlier.
+
+Action: Copy this code into the next cell and run it.
+
+
+# --- Mission Goal #4: Are there extreme call durations? ---
+print("\n--- Mission #4: The Outlier Problem ---")
+
+# The 'duration' column is the length of the call in seconds.
+# A boxplot is the best tool to see outliers.
+plt.figure(figsize=(10, 6))
+sns.boxplot(x='duration', data=df)
+plt.title('Call Duration Boxplot (Shows Outliers)')
+plt.show()
+
+# Let's calculate the IQR boundaries to prove it with math.
+Q1 = df['duration'].quantile(0.25)
+Q3 = df['duration'].quantile(0.75)
+IQR = Q3 - Q1
+upper_bound = Q3 + 1.5 * IQR
+
+print("Anything above this call duration is an outlier:", upper_bound, "seconds")
+
+# --- Let's clean these outliers ---
+# Instead of deleting them, we'll "cap" them. This means any value above our
+# upper bound will be replaced with the upper bound value. This is a safe way to clean data.
+df_cleaned = df.copy() # We make a copy to keep our original data safe.
+df_cleaned['duration'] = np.where(df_cleaned['duration'] > upper_bound, upper_bound, df_cleaned['duration'])
+
+print("\nOutliers have been capped. Let's look at the new boxplot:")
+plt.figure(figsize=(10, 6))
+sns.boxplot(x='duration', data=df_cleaned)
+plt.title('Call Duration Boxplot (After Capping Outliers)')
+plt.show()
+
+print("Insight #4: The original data had many extreme call durations. By cleaning these, our analysis and future model will be more accurate and not get distracted by these rare cases.")
+
+What Just Happened? (Insight #4) The first boxplot showed a lot of dots on the far right. These were our outliers—calls that were way longer than average. We used the IQR method to find a reasonable upper limit and then "capped" any duration longer than that. Our data is now cleaner and more reliable.
+
+Block 5: Mission Goal #5: The Grouping Strategy (Feature Engineering)
+Sometimes, we can create more powerful clues by combining or changing our existing ones. This is called Feature Engineering.
+
+Concept Deep Dive: What is Feature Engineering? Imagine you have three simple ingredients: flour, eggs, and sugar. By themselves, they aren't very interesting. But if you combine them in the right way, you create a new, much better feature: a cake! Feature engineering is the art of creating new, more meaningful columns from your existing ones.
+
+Action: Copy this code into the next cell and run it.
+
+# --- Mission Goal #5: Can we find better patterns by grouping customers? ---
+print("\n--- Mission #5: The Grouping Strategy (Feature Engineering) ---")
+
+# We will create a new feature called 'age_group'.
+# 'bins' defines the edges of our groups.
+# 'labels' gives a name to each group.
+age_bins = [17, 29, 39, 49, 59, 99]
+age_labels = ['18-29 (Young Adult)', '30-39 (Adult)', '40-49 (Middle-Aged)', '50-59 (Senior)', '60+ (Elder)']
+
+# We use the pd.cut function to create our new column.
+df_cleaned['age_group'] = pd.cut(df_cleaned['age'], bins=age_bins, labels=age_labels, right=True)
+
+# Now let's visualize our new feature!
+plt.figure(figsize=(12, 7))
+sns.countplot(x='age_group', hue='subscribed', data=df_cleaned)
+plt.title('Subscriptions by New Age Groups')
+plt.show()
+
+print("Insight #5: Feature Engineering worked! Our new 'age_group' column clearly shows that 'Young Adult' and 'Elder' customers have the highest subscription rates, confirming our earlier suspicion in a much clearer way.")
+
+What Just Happened? (Insight #5) We engineered a new feature! Instead of looking at every single age, we grouped them into categories. Our new chart confirms our theory from Block 2 much more clearly: the youngest and oldest groups are the best targets for the bank.
+
+Block 6 & 7: Campaign and Economic Clues
+Let's solve our last two EDA mysteries.
+
+Action: Copy this code into the next cell and run it.
+# --- Mission Goals #6 and #7: Campaign and Economic Analysis ---
+print("\n--- Mission #6 & #7: Campaign and Economic Insights ---")
+
+fig, axes = plt.subplots(1, 2, figsize=(20, 7))
+
+# Mission Goal #6: How many times should we call a customer?
+# 'campaign' is the number of times a customer was contacted.
+sns.boxplot(x='subscribed', y='campaign', data=df_cleaned, ax=axes[0])
+axes[0].set_title('Number of Contacts vs. Subscription')
+axes[0].set_ylim(0, 20) # Zooming in to see the main pattern
+
+# Mission Goal #7: Does the economy matter?
+# 'euribor3m' is a European interest rate. A lower rate often means the economy is doing better.
+sns.boxplot(x='subscribed', y='euribor3m', data=df_cleaned, ax=axes[1])
+axes[1].set_title('Interest Rate (euribor3m) vs. Subscription')
+
+plt.tight_layout()
+plt.show()
+
+print("Insight #6: Customers who subscribe are typically contacted fewer times (usually 1-2 times). Calling the same person many times seems to be ineffective and a waste of money.")
+print("Insight #7: Subscriptions are much more likely when the Euribor interest rate is low. This suggests the bank's campaigns are more successful during better economic conditions.")
+
+What Just Happened? (Insights #6 & #7) We found two more critical insights!
+
+The first chart shows that customers who say "yes" are almost always contacted only a few times. Calling a person 5, 10, or 15 times is not working.
+
+The second chart shows that when the interest rate is very low, the number of "yes" answers goes way up. The bank should focus its marketing budget during good economic times.
+
+Part E: The Simplification Challenge (PCA)
+Our data has a lot of columns. Before we build our final model, we need to simplify it.
+
+Block 8: Mission Goal #8: Simplifying with PCA
+Concept Deep Dive: What is PCA (Principal Component Analysis)? Imagine you are trying to describe a car to a friend. You could list every single detail: "it has a 12-inch steering wheel, 4 tires, 2 headlights, a V6 engine, 18-inch rims..." This is too much information!
+
+Instead, you could simplify it into its main "components" or "features": Performance (engine, speed), Comfort (seats, space), and Style (color, rims). You've just taken dozens of small details and summarized them into 3 main ideas.
+
+PCA does exactly this for our data. It takes all our columns (like age, job, income) and combines them into a few new "super-features" called Principal Components. These new features capture most of the important information but in a much simpler way. This is perfect for a model like KNN.
+
+Action: Copy this code into the next cell and run it.
+
+# --- Mission Goal #8: Simplifying Our Data with PCA ---
+print("\n--- Mission #8: The Simplification Challenge (PCA) ---")
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+
+# --- Step 1: Prepare the Data for PCA ---
+# PCA only works with numbers. We need to convert all our text columns.
+# We will use our cleaned dataframe 'df_cleaned' but drop the 'age' column since we have 'age_group'.
+pca_df = df_cleaned.drop(['age'], axis=1).copy()
+
+# Convert all text columns into numbers using 'get_dummies'.
+# This creates new columns for each category (e.g., job_admin, job_student).
+pca_df = pd.get_dummies(pca_df, drop_first=True) # drop_first avoids having duplicate info.
+
+# Separate the features (X) from our target (y).
+X = pca_df.drop('subscribed_yes', axis=1)
+y = pca_df['subscribed_yes']
+
+# --- Step 2: CRITICAL! Scale the Data Before PCA ---
+# PCA is very sensitive to scale, so we must scale our features first.
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# --- Step 3: Apply PCA ---
+# We will start by asking for 10 components.
+pca = PCA(n_components=10)
+X_pca = pca.fit_transform(X_scaled)
+
+# --- Step 4: Check How Much Information We Kept ---
+explained_variance = pca.explained_variance_ratio_
+print("Explained variance by each of the 10 components:", explained_variance)
+print("Total variance explained by 10 components:", sum(explained_variance) * 100, "%")
+
+# Let's create a "scree plot" to visualize this.
+plt.figure(figsize=(10, 6))
+plt.plot(np.cumsum(pca.explained_variance_ratio_))
+plt.xlabel('Number of Components')
+plt.ylabel('Cumulative Explained Variance')
+plt.title('Explained Variance by PCA Components')
+plt.grid(True)
+plt.show()
+
+print("Insight #8: We have successfully simplified our data! The plot shows that with just 10 new 'super-features' (Principal Components), we can explain about 50% of the information from our original 50+ columns. This makes our data much easier for the KNN model to handle.")
+
+What Just Happened? (Insight #8) We've successfully used an advanced technique! We took our dataset, which had over 50 columns after we prepared it, and used PCA to shrink it down. The plot shows that the first few components capture a lot of information. We've simplified our case file without losing the most important clues.
+
+Part F: The Final Verdict (KNN Classification)
+It's time to build our prediction model.
+
+Block 9: Building the KNN Classifier
+Concept Deep Dive: What is KNN (K-Nearest Neighbors)? Imagine you're a new student in class. To guess which club you might join, we look at the 5 students sitting closest to you. If 4 of them are in the art club and 1 is in the sports club, we'd predict you are most likely an "art club" person.
+
+KNN does exactly this with data points.
+
+K is the number of neighbors we look at (we'll start with K=5).
+
+It finds the K data points from our training data that are "closest" or most similar to a new customer.
+
+It then takes a majority vote from those neighbors to predict if the new customer will subscribe.
+
+Action: Copy this final code block into the last cell and run it.
+# --- The Final Verdict: KNN Classification ---
+print("\n--- The Final Verdict: Building the KNN Prediction Model ---")
+
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+
+# --- Step 1: Split our PCA-transformed data into Training and Testing sets ---
+# We'll use the 'X_pca' data we created in the last step.
+X_train, X_test, y_train, y_test = train_test_split(X_pca, y, test_size=0.3, random_state=42)
+
+# --- Step 2: Build and Train the KNN Model ---
+# We'll start with K=5 neighbors.
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train, y_train)
+
+# --- Step 3: Make Predictions on the Unseen Test Data ---
+y_pred = knn.predict(X_test)
+
+# --- Step 4: Evaluate the Model's Performance ---
+print("\n--- Model Evaluation Report (K=5) ---")
+print("Overall Accuracy:", accuracy_score(y_test, y_pred) * 100, "%")
+
+print("\n--- Confusion Matrix ---")
+# The confusion matrix is a report card for our model.
+conf_matrix = confusion_matrix(y_test, y_pred)
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=['No', 'Yes'], yticklabels=['No', 'Yes'])
+plt.xlabel('Predicted by Model')
+plt.ylabel('Actual Truth')
+plt.title('KNN Model Confusion Matrix')
+plt.show()
+
+print("\n--- Detailed Classification Report ---")
+# This report gives us two very important scores:
+# Precision: When our model predicts 'Yes', how often is it correct?
+# Recall: Of all the customers who actually said 'Yes', how many did our model find?
+print(classification_report(y_test, y_pred))
+
+print("\n--- FINAL CONCLUSION ---")
+print("We have successfully analyzed the bank's data and built a predictive model.")
+print("The model has a high accuracy, but the 'recall' for 'yes' cases is low.")
+print("This means the model is good at finding customers who will say 'no', but it misses many who would say 'yes'.")
+print("The bank can use our 8 insights to improve its marketing strategy immediately and can use this model as a starting point to build an even better one!")
+What Just Happened? You have completed the entire project! You built a KNN model to predict which customers will subscribe.
+
+The Accuracy is high (around 90%), but we know this is misleading because most customers say "no" anyway.
+
+The Confusion Matrix shows us the truth: the model correctly predicts thousands of "No" cases (top-left square) but only finds a small number of the "Yes" cases (bottom-right square).
+
+The Classification Report confirms this. The recall for 1 (the 'yes' class) is low. This is the key takeaway for the bank. Our model is a good start, but it needs to be improved to better identify those valuable "yes" customers.
+
+You have successfully gone from a raw data file to a complete analysis with 8 actionable insights, cleaned the data, engineered features, applied PCA, and built a machine learning model.
+
+Congratulations, Detective! Case closed
